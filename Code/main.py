@@ -56,7 +56,8 @@ class main:
         current_index - index of the log list with specific ip address
         time_index - index of the log list with specific time difference
         time_difference - difference of time from current log and last log in last time list
-        if time_difference is below time_threshold log is inserted into time_list with last log, if not new list is created
+        
+        if time_difference is below time_threshold log is inserted into time_list with last log, if not new list is created for this specific ip address
 
         idea is to check if logs in brute force attack were right after each other in short time interval 
         '''
