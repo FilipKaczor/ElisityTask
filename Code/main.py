@@ -1,6 +1,14 @@
 from datetime import datetime
 class main:
-    def __init__(self, file_name):
+    def __init__(self, file_name:str):
+        """
+        file_name - string with logs file name
+        all_logs - list of all logs
+        logs_class - list of logs classes by severity
+        logs_divided - list of lists of logs divided by severity
+        colors - list of colors used for console output
+        """
+
         self.file_name = file_name
         self.all_logs = []
         self.logs_class = []
@@ -12,7 +20,13 @@ class main:
             "\033[95m",  # Light Magenta - Custom
         )
 
-    '''basic processing and dividing logs into classes by severity'''
+    '''
+    function: processing_dividing
+    args:   None
+    output: None
+    idea: logs are being preprocessed, unified and divided into different classes by severity 
+    '''
+
     def processing_dividing(self):
         with open(self.file_name, "r") as f:
             for line in f:
@@ -48,6 +62,16 @@ class main:
                     new_log_class_index = self.logs_class.index(new_line[2])
                     self.logs_divided[new_log_class_index].append(new_line)
 
+    '''
+    function: search_for_brute_force 
+    args:   logs:list[str] - list of logs to search through for brute force
+            amount_threshold:int - lower limit for amount of logs in brute force to display
+            time_threshold:int - maximum timespan between logs to be recognized as one attack
+            
+    output: None
+    idea: logs are searched through for brute force attacks and separated by unique ip addresses and time between attacks
+    '''
+
     def search_for_brute_force(self, logs:list[str], amount_threshold:int, time_threshold:int):
         brute_force_logs = []
         brute_force_ip_addresses = []
@@ -60,6 +84,9 @@ class main:
         if time_difference is below time_threshold log is inserted into time_list with last log, if not new list is created for this specific ip address
 
         idea is to check if logs in brute force attack were right after each other in short time interval 
+        
+        presentation of processed data:
+        [ division by ip address [ division by time [logs]]]
         '''
 
         for log in logs:
@@ -69,10 +96,11 @@ class main:
                     current_index = brute_force_ip_addresses.index(log[3])
                     time_index = len(brute_force_logs[current_index])-1
                     last_log_index = len(brute_force_ip_addresses[current_index][time_index])-1
+
                     time_difference = datetime.strptime(f"{log[0]} {log[1]}", "%Y-%m-%d %H:%M:%S") - datetime.strptime(f"{brute_force_logs[current_index][time_index][last_log_index][0]} {brute_force_logs[current_index][time_index][last_log_index][1]}", "%Y-%m-%d %H:%M:%S")
                     time_difference = time_difference.total_seconds()
 
-                    if  time_difference < time_threshold:
+                    if time_difference < time_threshold:
                         brute_force_logs[current_index][time_index].append(log)
                     else:
                         time_index+=1
@@ -98,10 +126,10 @@ class main:
                     print("\n")
 
 
+    def search_for_sql_injection(self):
+        print("Searching for sql injection... \n")
 
-
-
+'''testing examples of methods'''
 test_object = main("../Files/sample_security.log")
 test_object.processing_dividing()
-# print(test_object.logs_class)
-test_object.search_for_brute_force(test_object.logs_divided[1], 2, 10)
+# test_object.search_for_brute_force(test_object.logs_divided[1], 2, 10)
