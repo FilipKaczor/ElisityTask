@@ -84,6 +84,7 @@ class main:
 
         '''
         checking if brute force attempts were past amount_threshold per ip address
+        results are displayed in console using custom colors to emphasise crucial information
         '''
 
         print(self.colors[0],"Searching for brute force logs... \n")
