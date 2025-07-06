@@ -126,10 +126,28 @@ class main:
                     print("\n")
 
 
-    def search_for_sql_injection(self):
+    def search_for_sql_injection(self, logs:list[str]):
         print("Searching for sql injection... \n")
+        sql_injection_logs = []
+        sql_injection_ip_addresses = []
+        sql_injection_statements_blacklist = ("'", "SELECT", "FROM", "UNION", "NULL", "*", " OR ", "%", "DROP", "INSERT", "NOT", "WHERE", "/**/")
+        for log in logs:
+            for sql_injection_word in sql_injection_statements_blacklist:
+                if sql_injection_word in log[5]:
+                    if log[3] not in sql_injection_ip_addresses:
+                        sql_injection_ip_addresses.append(log[3])
+                        sql_injection_logs.append([log])
+                    else:
+                        sql_injection_logs[sql_injection_ip_addresses.index(log[3])].append(log)
+                    break
+        #todo custom printing
+        print(sql_injection_logs)
+        print(sql_injection_ip_addresses)
+
+
 
 '''testing examples of methods'''
 test_object = main("../Files/sample_security.log")
 test_object.processing_dividing()
-# test_object.search_for_brute_force(test_object.logs_divided[1], 2, 10)
+# test_object.search_for_brute_force(test_object.logs_divided[test_object.logs_class.index("WARNING")], 2, 10)
+test_object.search_for_sql_injection(test_object.logs_divided[test_object.logs_class.index("ERROR")])
