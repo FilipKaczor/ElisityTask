@@ -20,21 +20,21 @@ class main:
             "\033[95m",  # Light Magenta - Custom
         )
 
-    '''
-    function: processing_dividing
-    args:   None
-    output: None
-    idea: logs are being preprocessed, unified and divided into different classes by severity 
-    '''
-
     def processing_dividing(self):
+
+        """
+        :return: None
+
+        idea: logs are preprocessed, unified and divided into different classes by severity
+        """
+
         with open(self.file_name, "r") as f:
             for line in f:
 
                 new_line = []
                 word_count = 0
 
-                '''deleted brackets from date and hour'''
+                '''delete brackets from date and hour'''
                 for word in line.split():
                     if (word_count == 0):
                         new_line.append(word[1:])
@@ -44,15 +44,15 @@ class main:
                         new_line.append(word)
                     word_count += 1
 
-                '''adressed issue where sql injection was separated by " "'''
+                '''address issue where sql injection was separated by " "'''
                 if len(new_line) > 6:
                     merged = " ".join(new_line[5:])
                     new_line = new_line[:5] + [merged]
 
-                '''adding processed logs into main list'''
+                '''add processed logs into main list'''
                 self.all_logs.append(new_line)
 
-                '''dividing logs into classes by the severity'''
+                '''divide logs into classes by the severity'''
                 if new_line[2] not in self.logs_class:
                     self.logs_class.append(new_line[2])
                     self.logs_divided.append([])
@@ -62,17 +62,17 @@ class main:
                     new_log_class_index = self.logs_class.index(new_line[2])
                     self.logs_divided[new_log_class_index].append(new_line)
 
-    '''
-    function: search_for_brute_force 
-    args:   logs:list[str] - list of logs to search through for brute force
-            amount_threshold:int - lower limit for amount of logs in brute force to display
-            time_threshold:int - maximum timespan between logs to be recognized as one attack
-            
-    output: None
-    idea: logs are searched through for brute force attacks and separated by unique ip addresses and time between attacks
-    '''
-
     def search_for_brute_force(self, logs:list[str], amount_threshold:int, time_threshold:int):
+
+        """
+        :param logs:list[str] - list of logs to search through for brute force
+        :param amount_threshold:int - lower limit for amount of logs in brute force to display
+        :param time_threshold:int - maximum timespan between logs to be recognized as one attack
+        :return: None
+
+        idea: logs are searched through, using 'FAILED_LOGIN', for brute force attacks and separated by unique ip addresses and time between attacks
+        """
+
         brute_force_logs = []
         brute_force_ip_addresses = []
 
@@ -111,43 +111,60 @@ class main:
                     brute_force_logs.append([[log]])
 
         '''
-        checking if brute force attempts were past amount_threshold per ip address
-        results are displayed in console using custom colors to emphasise crucial information
+        check if brute force attempts were past amount_threshold per ip address
+        results are displayed in console using custom colors to emphasise crucial information such as ip addresses and timespan
         '''
 
         print(self.colors[0],"Searching for brute force logs... \n")
         for logs_per_ip in brute_force_logs:
             for logs_per_time in logs_per_ip:
                 if len(logs_per_time) >= amount_threshold:
-                    print(self.colors[2], f"From ip address {brute_force_ip_addresses[brute_force_logs.index(logs_per_ip)]}")
+                    print(self.colors[2], f"From ip address {self.colors[1]} {brute_force_ip_addresses[brute_force_logs.index(logs_per_ip)]}")
                     print(self.colors[2], f"In time span: {logs_per_time[0][0]} {logs_per_time[0][1]} - {logs_per_time[len(logs_per_time)-1][0]} {logs_per_time[len(logs_per_time)-1][1]}")
                     print(self.colors[1], f"Were {len(logs_per_time)} attempts of brute force")
-                    print(self.colors[1], f"On account names: \n  " + "\n  ".join(log[5] for log in logs_per_time))
+                    print(self.colors[1], f"On account names: \n  " + "\n  ".join(log[5].split("=")[1] for log in logs_per_time))
                     print("\n")
 
-
     def search_for_sql_injection(self, logs:list[str]):
-        print("Searching for sql injection... \n")
+        """
+        :param logs:list[str] - list of logs to search through for sql injection attempts
+        :return: None
+
+        idea: logs are searched through using 'SQL_INJECTION_ATTEMPT' in event type and separated by unique ip addresses
+        """
+
+        print(self.colors[0],"Searching for sql injection logs... \n")
         sql_injection_logs = []
         sql_injection_ip_addresses = []
-        sql_injection_statements_blacklist = ("'", "SELECT", "FROM", "UNION", "NULL", "*", " OR ", "%", "DROP", "INSERT", "NOT", "WHERE", "/**/")
-        for log in logs:
-            for sql_injection_word in sql_injection_statements_blacklist:
-                if sql_injection_word in log[5]:
-                    if log[3] not in sql_injection_ip_addresses:
-                        sql_injection_ip_addresses.append(log[3])
-                        sql_injection_logs.append([log])
-                    else:
-                        sql_injection_logs[sql_injection_ip_addresses.index(log[3])].append(log)
-                    break
-        #todo custom printing
-        print(sql_injection_logs)
-        print(sql_injection_ip_addresses)
 
+        for log in logs:
+            if log[4] == "SQL_INJECTION_ATTEMPT":
+                if log[3] not in sql_injection_ip_addresses:
+                    sql_injection_ip_addresses.append(log[3])
+                    sql_injection_logs.append([log])
+                else:
+                    sql_injection_logs[sql_injection_ip_addresses.index(log[3])].append(log)
+
+        '''
+        results are displayed in console using custom colors to emphasise crucial information such as ip addresses and used SQL queries
+        '''
+
+        for ip_address in sql_injection_ip_addresses:
+            print(self.colors[2], f"From ip address {self.colors[1]} {ip_address}")
+            print(self.colors[2], f"were {len(sql_injection_logs[sql_injection_ip_addresses.index(ip_address)])} attempts of sql injection")
+            for logs_per_ip in sql_injection_logs[sql_injection_ip_addresses.index(ip_address)]:
+                print(self.colors[1], f"using: {logs_per_ip[5].split("=")[1]}")
+            print("\n")
+
+
+    def search_for_unusual_access_logs(self, logs:list[str]):
+        print(self.colors[0],"Searching for unusual access logs... \n")
+        #todo
 
 
 '''testing examples of methods'''
 test_object = main("../Files/sample_security.log")
 test_object.processing_dividing()
 # test_object.search_for_brute_force(test_object.logs_divided[test_object.logs_class.index("WARNING")], 2, 10)
-test_object.search_for_sql_injection(test_object.logs_divided[test_object.logs_class.index("ERROR")])
+# test_object.search_for_sql_injection(test_object.logs_divided[test_object.logs_class.index("ERROR")])
+test_object.search_for_unusual_access_logs(test_object.logs_divided[test_object.logs_class.index("ERROR")])
