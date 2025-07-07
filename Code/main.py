@@ -126,6 +126,7 @@ class main:
                     print("\n")
 
     def search_for_sql_injection(self, logs:list[str]):
+
         """
         :param logs:list[str] - list of logs to search through for sql injection attempts
         :return: None
@@ -151,14 +152,47 @@ class main:
 
         for ip_address in sql_injection_ip_addresses:
             print(self.colors[2], f"From ip address {self.colors[1]} {ip_address}")
-            print(self.colors[2], f"were {len(sql_injection_logs[sql_injection_ip_addresses.index(ip_address)])} attempts of sql injection")
+            print(self.colors[2], f"were {len(sql_injection_logs[sql_injection_ip_addresses.index(ip_address)])} attempt(s) of sql injection")
             for logs_per_ip in sql_injection_logs[sql_injection_ip_addresses.index(ip_address)]:
                 print(self.colors[1], f"using: {logs_per_ip[5].split("=")[1]}")
             print("\n")
 
 
     def search_for_unusual_access_logs(self, logs:list[str]):
+
+        """
+        :param logs:list[str] - list of logs to search through for unusual access attempts
+        :return: None
+        idea: logs are searched through using 'UNUSUAL_ACCESS' in event type and separated by unique ip addresses
+        """
+
         print(self.colors[0],"Searching for unusual access logs... \n")
+
+        unusual_access_logs = []
+        unusual_access_logs_ip_addresses = []
+
+        for log in logs:
+            if log[4] == "UNUSUAL_ACCESS":
+                if log[3] not in unusual_access_logs_ip_addresses:
+                    unusual_access_logs_ip_addresses.append(log[3])
+                    unusual_access_logs.append([log])
+                else:
+                    unusual_access_logs[unusual_access_logs_ip_addresses.index(log[3])].append(log)
+
+        '''
+        results are displayed in console using custom colors to emphasise crucial information such as ip addresses and targeted directory
+        '''
+
+        for ip_address in unusual_access_logs_ip_addresses:
+            print(self.colors[2], f"From ip address {self.colors[1]} {ip_address}")
+            print(self.colors[2],
+                  f"were {len(unusual_access_logs[unusual_access_logs_ip_addresses.index(ip_address)])} attempt(s) of unusual access")
+            for logs_per_ip in unusual_access_logs[unusual_access_logs_ip_addresses.index(ip_address)]:
+                print(self.colors[1], f"to directory: {logs_per_ip[5]}")
+            print("\n")
+
+    def search_for_port_scan(self, logs:list[str]):
+        print(self.colors[0],"Searching for port scan logs... \n")
         #todo
 
 
