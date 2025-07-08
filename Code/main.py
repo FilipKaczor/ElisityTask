@@ -23,6 +23,7 @@ class main:
         )
         self.output_file_name = f"../Output_results/output_{datetime.now().strftime('%Y%m%d-%H%M%S')}.txt"
         self.output_file = open(self.output_file_name, "a", encoding="utf-8")
+        self.processing_dividing()
 
     def processing_dividing(self):
 
@@ -289,7 +290,6 @@ class main:
 
 '''testing examples of methods'''
 test_object = main("../Files/sample_security.log")
-test_object.processing_dividing()
 test_object.search_for_brute_force(test_object.logs_divided[test_object.logs_class.index("WARNING")], 2, 10)
 test_object.search_for_sql_injection(test_object.logs_divided[test_object.logs_class.index("ERROR")])
 test_object.search_for_unusual_access_logs(test_object.logs_divided[test_object.logs_class.index("ERROR")])
